@@ -1,0 +1,467 @@
+substitutions:
+  name: "mppha2mppt"
+  friendly_name: "MPPHA dual MPPT"
+  ap_ssid: "${name} - Setup"
+  ap_pass: "setup1234"
+  project_name: "mchiriciuc.voltronic-dual-mppt"
+  project_version: "1.0.0"
+  import_url: "github://mchiriciuc/mppha-dual-mppt/firmware.yaml@v1.0.0"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: ${project_name}
+    version: ${project_version}
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
+
+external_components:
+  - source: github://syssi/esphome-pipsolar@pip8048
+    refresh: 0s
+
+logger:
+  level: INFO
+
+api:
+
+ota:
+  platform: esphome
+
+dashboard_import:
+  package_import_url: ${import_url}
+  import_full_config: false
+
+wifi:
+  ap:
+    ssid: ${ap_ssid}
+    password: ${ap_pass}
+
+captive_portal:
+
+esp32_improv:
+  authorizer: none
+
+improv_serial:
+  next_url: "https://mchiriciuc.github.io/mppha-dual-mppt?ip={{ip_address}}&name={{device_name}}&version={{esphome_version}}"
+
+web_server:
+  port: 80
+  log: on
+  version: 3
+  local: true
+
+uart:
+  - id: uart_bus
+    tx_pin: GPIO6
+    rx_pin: GPIO7
+    baud_rate: 2400
+
+pipsolar:
+  - uart_id: uart_bus
+    id: inverter0
+
+button:
+  - platform: restart
+    name: Restart
+
+# ---------------- Debounce scripts pentru sync sensor -> select ----------------
+script:
+  - id: sync_battery_under_voltage
+    mode: restart
+    then:
+      - delay: 500ms
+      - select.set:
+          id: select_battery_under_voltage
+          option: !lambda return str_sprintf("%.1f", id(battery_under_voltage).state);
+
+  - id: sync_battery_float_voltage
+    mode: restart
+    then:
+      - delay: 500ms
+      - select.set:
+          id: select_battery_float_charge_voltage
+          option: !lambda return str_sprintf("%.1f", id(battery_float_voltage).state);
+
+  - id: sync_battery_recharge_voltage
+    mode: restart
+    then:
+      - delay: 500ms
+      - select.set:
+          id: select_battery_recharge_voltage
+          option: !lambda return str_sprintf("%.1f", id(battery_recharge_voltage).state);
+
+  - id: sync_battery_redischarge_voltage
+    mode: restart
+    then:
+      - delay: 500ms
+      - select.set:
+          id: select_battery_redischarge_voltage
+          option: !lambda return str_sprintf("%.1f", id(battery_redischarge_voltage).state);
+
+  - id: sync_max_ac_charging_current
+    mode: restart
+    then:
+      - delay: 500ms
+      - select.set:
+          id: select_max_ac_charging_current
+          option: !lambda return str_sprintf("%.1f", id(max_ac_charging_current).state);
+
+  - id: sync_max_charging_current
+    mode: restart
+    then:
+      - delay: 500ms
+      - select.set:
+          id: select_max_charging_current
+          option: !lambda return str_sprintf("%.1f", id(max_charging_current).state);
+# ------------------------------------------------------------------------------
+
+sensor:
+  - platform: pipsolar
+    pipsolar_id: inverter0
+
+    grid_voltage:
+      name: Grid voltage
+    grid_frequency:
+      name: Grid frequency
+    bus_voltage:
+      name: Bus voltage
+    inverter_heat_sink_temperature:
+      name: Heat sink temperature
+
+    pv1_input_voltage:
+      name: PV1 voltage
+    pv1_input_current:
+      name: PV1 current
+    pv1_charging_power:
+      name: PV1 power
+
+    pv2_input_voltage:
+      name: PV2 voltage
+    pv2_input_current:
+      name: PV2 current
+    pv2_charging_power:
+      name: PV2 power
+          
+    battery_voltage:
+      name: Battery voltage
+    battery_charging_current:
+      name: Battery charging current
+    battery_discharge_current:
+      name: Battery discharge current
+
+    battery_under_voltage:
+      name: Battery under voltage
+      id: battery_under_voltage
+      on_value:
+        then:
+          - script.execute: sync_battery_under_voltage
+
+    battery_bulk_voltage:
+      name: Battery bulk voltage
+
+    battery_float_voltage:
+      name: Battery float voltage
+      id: battery_float_voltage
+      on_value:
+        then:
+          - script.execute: sync_battery_float_voltage
+
+    battery_recharge_voltage:
+      name: Battery recharge voltage
+      id: battery_recharge_voltage
+      on_value:
+        then:
+          - script.execute: sync_battery_recharge_voltage
+
+    battery_redischarge_voltage:
+      name: Battery redischarge voltage
+      id: battery_redischarge_voltage
+      on_value:
+        then:
+          - script.execute: sync_battery_redischarge_voltage
+
+    battery_type:
+      name: Battery type
+
+    current_max_ac_charging_current:
+      name: Battery max ac charging current
+      id: max_ac_charging_current
+      on_value:
+        then:
+          - script.execute: sync_max_ac_charging_current
+
+    current_max_charging_current:
+      id: max_charging_current
+      name: Battery max charging current
+      on_value:
+        then:
+          - script.execute: sync_max_charging_current
+
+    ac_output_apparent_power:
+      name: Output apparent power
+    ac_output_active_power:
+      name: Output active power
+    ac_output_voltage:
+      name: Output voltage
+    output_load_percent:
+      name: Output load percent
+    output_mode:
+      name: Output mode
+
+binary_sensor:
+  - platform: pipsolar
+    pipsolar_id: inverter0
+
+    charging_status:
+      name: Charging status
+
+    faults_present:
+      name: Faults present
+    fault_inverter_fault:
+      name: Fault - inverter fault
+    fault_bus_over:
+      name: Fault - bus over
+    fault_bus_under:
+      name: Fault - bus under
+    fault_bus_soft_fail:
+      name: Fault - bus soft fail
+    fault_opvshort:
+      name: Fault - opv short
+    fault_inverter_voltage_too_low:
+      name: Fault - voltage too low
+    fault_inverter_voltage_too_high:
+      name: Fault - voltage too high
+    fault_inverter_over_current:
+      name: Fault - over current
+    fault_inverter_soft_failed:
+      name: Fault - inverter soft failed
+    fault_self_test_failed:
+      name: Fault - self test failed
+    fault_op_dc_voltage_over:
+      name: Fault - op dc voltage over
+    fault_battery_open:
+      name: Fault - battery open
+    fault_current_sensor_failed:
+      name: Fault - current sensor failed
+    fault_battery_short:
+      name: Fault - battery short
+    fault_mppt_overload:
+      name: Fault - MPPT overload
+    fault_dc_dc_over_current:
+      name: Fault - dc-dc over current
+    fault_code:
+      name: Fault - fault code
+
+    warnings_present:
+      name: Warnings present
+    warning_power_loss:
+      name: Warning - power loss
+    warning_line_fail:
+      name: Warning - line fail
+    warning_over_temperature:
+      name: Warning - over temperature
+    warning_fan_lock:
+      name: Warning - fan lock
+    warning_battery_voltage_high:
+      name: Warning - battery voltage high
+    warning_battery_low_alarm:
+      name: Warning - battery low alarm
+    warning_battery_under_shutdown:
+      name: Warning - batttery under voltage shutdown
+    warning_battery_derating:
+      name: Warning - battery derating
+    warning_over_load:
+      name: Warning - over load
+    warning_eeprom_failed:
+      name: Warning - EEPROM failed
+    warning_power_limit:
+      name: Warning - power limit
+    warning_pv_voltage_high:
+      name: Warning - PV voltage high
+    warning_mppt_overload:
+      name: Warning - MPPT overload
+    warning_battery_too_low_to_charge:
+      name: Warning - battery too low to charge
+    warning_high_ac_input_during_bus_soft_start:
+      name: Warning - high ac input during bus soft start
+    warning_battery_equalization:
+      name: Warning - battery equalization
+
+text_sensor:
+- platform: template
+  name: Device mode
+  id: device_mode_str
+- platform: pipsolar
+  pipsolar_id: inverter0
+  device_mode:
+    name: Device mode int
+    internal: true
+    id: device_mode_int
+    on_value:
+      then:
+        - lambda: |-
+            auto dstate = "Bad apples";
+            if (x == "B") dstate = "Battery";
+            else if (x == "L") dstate = "Grid";
+            else if (x == "P") dstate = "Power on";
+            else if (x == "S") dstate = "Standby";
+            else if (x == "F") dstate = "Fault";
+            else if (x == "D") dstate = "Shutdown";
+            id(device_mode_str).publish_state(dstate);
+
+light:
+  - platform: status_led
+    name: Status LED
+    pin:
+      number: GPIO45
+      inverted: True
+
+output:
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    battery_recharge_voltage:
+      id: output_battery_recharge_voltage
+      possible_values: [43.0,44.0,45.0,46.0,47.0,48.0,49.0]
+    battery_float_voltage:
+      id: output_battery_float_voltage
+      possible_values: [52.0,52.1,52.2,52.3,52.4,52.5,52.6,52.7,52.8,52.9,53.0,53.1,53.2,53.3]
+    battery_redischarge_voltage:
+      id: output_battery_redischarge_voltage
+      possible_values: [0.0,47.0,48.0,49.0,50.0,51.0,52.0,53.0,54.0,55.0]
+    battery_under_voltage:
+      id: output_battery_under_voltage
+    current_max_ac_charging_current:
+      id: output_max_ac_charging_current
+      possible_values: [2.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]
+    current_max_charging_current:
+      id: output_max_charging_current
+      possible_values: [10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0,110.0,120.0,130.0,140.0,150.0]
+    output_source_priority:
+      id: output_output_source_priority
+    charger_source_priority:
+      id: output_charger_source_priority
+
+select:
+  - platform: template
+    name: Max. charging current
+    id: select_max_charging_current
+    options: ["10.0","20.0","30.0","40.0","50.0","60.0","70.0","80.0","90.0","100.0","110.0","120.0","130.0","140.0","150.0"]
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            const float target = std::stof(x.c_str());
+            if (!isnan(id(max_charging_current).state) && fabsf(id(max_charging_current).state - target) <= 0.05f) {
+              ESP_LOGI("select", "Skip set_level max_charging_current: already at %.1f", target);
+              return;
+            }
+            id(output_max_charging_current).set_level(target);
+
+  - platform: template
+    name: Max. AC charging current
+    id: select_max_ac_charging_current
+    options: ["2.0","10.0","20.0","30.0","40.0","50.0","60.0","70.0","80.0","90.0","100.0"]
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            const float target = std::stof(x.c_str());
+            if (!isnan(id(max_ac_charging_current).state) && fabsf(id(max_ac_charging_current).state - target) <= 0.05f) {
+              ESP_LOGI("select", "Skip set_level max_ac_charging_current: already at %.1f", target);
+              return;
+            }
+            id(output_max_ac_charging_current).set_level(target);
+
+  - platform: template
+    name: Battery under voltage
+    id: select_battery_under_voltage
+    options: ["40.0","41.0","42.0","43.0","44.0","45.0","46.0","47.0","48.0"]
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            const float target = std::stof(x.c_str());
+            if (!isnan(id(battery_under_voltage).state) && fabsf(id(battery_under_voltage).state - target) <= 0.05f) {
+              ESP_LOGI("select", "Skip set_level battery_under_voltage: already at %.1f", target);
+              return;
+            }
+            id(output_battery_under_voltage).set_level(target);
+
+  - platform: template
+    name: Battery redischarge voltage
+    id: select_battery_redischarge_voltage
+    options: ["0.0","47.0","48.0","49.0","50.0","51.0","52.0","53.0","54.0","55.0"]
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            const float target = std::stof(x.c_str());
+            if (!isnan(id(battery_redischarge_voltage).state) && fabsf(id(battery_redischarge_voltage).state - target) <= 0.05f) {
+              ESP_LOGI("select", "Skip set_level battery_redischarge_voltage: already at %.1f", target);
+              return;
+            }
+            id(output_battery_redischarge_voltage).set_level(target);
+
+  - platform: template
+    name: Battery recharge voltage
+    id: select_battery_recharge_voltage
+    options: ["43.0","44.0","45.0","46.0","47.0","48.0","49.0"]
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            const float target = std::stof(x.c_str());
+            if (!isnan(id(battery_recharge_voltage).state) && fabsf(id(battery_recharge_voltage).state - target) <= 0.05f) {
+              ESP_LOGI("select", "Skip set_level battery_recharge_voltage: already at %.1f", target);
+              return;
+            }
+            id(output_battery_recharge_voltage).set_level(target);
+
+  - platform: template
+    name: Battery float charge voltage
+    id: select_battery_float_charge_voltage
+    options: ["52.0","52.1","52.2","52.3","52.4","52.5","52.6","52.7","52.8","52.9","53.0","53.1","53.2","53.3"]
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            const float target = std::stof(x.c_str());
+            if (!isnan(id(battery_float_voltage).state) && fabsf(id(battery_float_voltage).state - target) <= 0.05f) {
+              ESP_LOGI("select", "Skip set_level battery_float_voltage: already at %.1f", target);
+              return;
+            }
+            id(output_battery_float_voltage).set_level(target);
+
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    output_source_priority:
+      id: inverter0_output_source_priority_select
+      name: Output source priority
+      optionsmap:
+        "Utility first": "POP00"
+        "Solar/Utility/Battery": "POP01"
+        "Solar/Battery/Utility": "POP02"
+      statusmap:
+        "0": "Utility first"
+        "1": "Solar/Utility/Battery"
+        "2": "Solar/Battery/Utility"
+
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    charger_source_priority:
+      name: Charger Source Priority
+      optionsmap:
+        "Solar first": "PCP01"
+        "Solar and utility": "PCP02"
+        "Solar charging only": "PCP03"
+      statusmap:
+        "1": "Solar first"
+        "2": "Solar and utility"
+        "3": "Solar charging only"
