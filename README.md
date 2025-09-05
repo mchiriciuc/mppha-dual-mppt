@@ -2,6 +2,11 @@
 
 📡 ESPHome firmware for **Voltronic MPPHA dual MPPT** inverters, ready to integrate with Home Assistant.
 
+To be used with MPPHA electronic module made esspecially for this purpose
+
+<img width="1152" height="1373" alt="image" src="https://github.com/user-attachments/assets/c60abaf0-473b-4760-b51d-8d6e90fadb3a" />
+
+
 ## 🚀 Features
 - Full integration via [ESPHome](https://esphome.io)
 - Automatic detection and adoption through **ESPHome Dashboard**
