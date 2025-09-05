@@ -1,0 +1,18 @@
+devices:
+  - name: "MPPHA dual MPPT"
+    friendly_name: "MPPHA for dual MPPT Voltronic Inverters"
+    project:
+      name: "mchiriciuc.voltronic-dual-mppt"
+      version: "1.0.0"
+    description: |
+      ESPHome firmware for MPPHA communication module for Voltronic (style) dual MPPT inverters.
+      Provides monitoring of both PV MPPTs, battery, grid, load and inverter status,
+      and control over charging currents, battery voltages, and source priorities.
+    image_url: "https://raw.githubusercontent.com/mchiriciuc/mppha-dual-mppt/main/docs/device.png"
+    download_url: "github://mchiriciuc/mppha-dual-mppt/firmware.yaml"
+    documentation_url: "https://github.com/mchiriciuc/mppha-dual-mppt"
+    wifi:
+      improv: true
+      captive_portal: true
+    platforms:
+      - esp32
