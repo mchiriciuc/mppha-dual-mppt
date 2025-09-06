@@ -1,6 +1,6 @@
 # MPPHA dual MPPT for ESPHome
 
-📡 ESPHome firmware for **Voltronic MPPHA dual MPPT** inverters, ready to integrate with Home Assistant.
+📡 ESPHome firmware for **Voltronic dual MPPT** inverters, ready to integrate with Home Assistant.
 
 To be used with MPPHA electronic module made esspecially for this purpose
 
