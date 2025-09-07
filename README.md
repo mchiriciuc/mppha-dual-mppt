@@ -2,7 +2,7 @@
 
 📡 ESPHome firmware for **Voltronic dual MPPT** inverters, ready to integrate with Home Assistant.
 
-To be used with MPPHA electronic module made esspecially for this purpose
+To be used with MPPHA electronic module made esspecially for this purpose, or with a board of your own making
 
 <img width="1152" height="1373" alt="image" src="https://github.com/user-attachments/assets/c60abaf0-473b-4760-b51d-8d6e90fadb3a" />
 
@@ -16,10 +16,13 @@ To be used with MPPHA electronic module made esspecially for this purpose
 - OTA firmware updates
 
 ## 🛠️ Installation
-1. Open **ESPHome Dashboard** in Home Assistant.
-2. Choose **+ New Device** → **Adopt** → Import firmware: github://mchiriciuc/mppha-dual-mppt/firmware.yaml
-3. Follow the steps to improv BLE or use the Captive portal 
-4. Connect the device to Wi-Fi.
+If you made your own board, downlaod the yaml, change the UARG gpio's as per your board and enjoy.
+If you purchesed a MPPHA board from me, it comes preflashed with esphome with the last yaml so you just have to adopt it to your Home Assistant
+1. Follow the steps to improv BLE or use the Captive portal
+2. Connect the device to Wi-Fi.
+3. Open **ESPHome Dashboard** in Home Assistant.
+4. Choose **+ New Device** → **Adopt** → Import firmware: github://mchiriciuc/mppha-dual-mppt/firmware.yaml
+
 
 ## 📦 Releases
 Latest stable release:  
