@@ -48,9 +48,6 @@ captive_portal:
 esp32_improv:
   authorizer: none
 
-improv_serial:
-  next_url: "https://mchiriciuc.github.io/mppha-dual-mppt?ip={{ip_address}}&name={{device_name}}&version={{esphome_version}}"
-
 web_server:
   port: 80
   log: on
