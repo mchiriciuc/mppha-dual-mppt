@@ -1,5 +1,5 @@
 substitutions:
-  name: "mppha2mppt"
+  name: "mpphadual"
   friendly_name: "MPPHA for dual MPPT Voltronic Inverters"
   ap_ssid: "${name} - Setup"
   ap_pass: "setup1234"
