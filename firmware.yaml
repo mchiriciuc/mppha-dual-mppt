@@ -6,6 +6,13 @@
 # Interface: UART to Voltronic Protocol
 # 
 # CHANGELOG:
+# v1.2.0 - 2025-10-09
+#   - Added dynamic log level control via select entity
+#   - Added debug component and reset reason sensor
+#   - Added min_version requirement (2025.5.0)
+#   - Added on_boot action to set initial log level
+#   - Added log_level_default substitution
+#
 # v1.1.0 - 2025-10-09
 #   - Removed sync scripts completely
 #   - Added direct comparison in on_value handlers
@@ -24,11 +31,12 @@
 substitutions:
   name: "mpphadual"
   friendly_name: "MPPHA Dual"
+  log_level_default: "INFO"
   ap_ssid: "${name} - Setup"
   ap_pass: "setup1234"
   project_name: "mchiriciuc.mppha-dual-mppt"
-  project_version: "1.1.0"
-  import_url: "github://mchiriciuc/mppha-dual-mppt/firmware.yaml@v1.1.0"
+  project_version: "1.2.0"
+  import_url: "github://mchiriciuc/mppha-dual-mppt/firmware.yaml@v1.2.0"
 
 # ============================================================================
 # DEVICE CONFIGURATION
@@ -37,9 +45,13 @@ esphome:
   name: ${name}
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true
+  min_version: 2025.5.0
   project:
     name: ${project_name}
     version: ${project_version}
+  on_boot:
+    - logger.set_level:
+        level: ${log_level_default}
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -59,7 +71,12 @@ external_components:
 # LOGGING
 # ============================================================================
 logger:
-  level: INFO
+  level: VERY_VERBOSE
+
+# ============================================================================
+# DEBUGGING
+# ============================================================================
+debug:
 
 # ============================================================================
 # NETWORK CONFIGURATION
@@ -470,6 +487,11 @@ binary_sensor:
 # TEXT SENSORS (Diagnostic)
 # ============================================================================
 text_sensor:
+  - platform: debug
+    reset_reason:
+      name: Reset Reason
+      entity_category: diagnostic
+
   - platform: template
     name: Device mode
     id: device_mode_str
@@ -538,6 +560,66 @@ output:
 # SELECTS (Configuration)
 # ============================================================================
 select:
+  # Log level control
+  - platform: template
+    name: Log Level
+    id: select_log_level
+    icon: mdi:math-log
+    entity_category: config
+    options:
+      - "NONE"
+      - "ERROR"
+      - "WARN"
+      - "INFO"
+      - "DEBUG"
+      - "VERBOSE"
+      - "VERY_VERBOSE"
+    initial_option: ${log_level_default}
+    optimistic: true
+    set_action:
+      - if:
+          condition:
+            lambda: 'return x == "NONE";'
+          then:
+            - logger.set_level:
+                level: NONE
+      - if:
+          condition:
+            lambda: 'return x == "ERROR";'
+          then:
+            - logger.set_level:
+                level: ERROR
+      - if:
+          condition:
+            lambda: 'return x == "WARN";'
+          then:
+            - logger.set_level:
+                level: WARN
+      - if:
+          condition:
+            lambda: 'return x == "INFO";'
+          then:
+            - logger.set_level:
+                level: INFO
+      - if:
+          condition:
+            lambda: 'return x == "DEBUG";'
+          then:
+            - logger.set_level:
+                level: DEBUG
+      - if:
+          condition:
+            lambda: 'return x == "VERBOSE";'
+          then:
+            - logger.set_level:
+                level: VERBOSE
+      - if:
+          condition:
+            lambda: 'return x == "VERY_VERBOSE";'
+          then:
+            - logger.set_level:
+                level: VERY_VERBOSE
+
   # Battery charging current limits
   - platform: template
     name: Max. charging current
