@@ -3,7 +3,7 @@ devices:
     friendly_name: "MPPHA for dual MPPT Voltronic Inverters"
     project:
       name: "mchiriciuc.voltronic-dual-mppt"
-      version: "1.0.0"
+      version: "1.1.0"
     description: |
       ESPHome firmware for MPPHA communication module for Voltronic (style) dual MPPT inverters.
       Provides monitoring of both PV MPPTs, battery, grid, load and inverter status,
