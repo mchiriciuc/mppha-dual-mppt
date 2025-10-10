@@ -12,8 +12,6 @@
 #   - Added min_version requirement (2025.5.0)
 #   - Added on_boot action to set initial log level
 #   - Added log_level_default substitution
-#   - Removed entity_category from pipsolar sensors (not supported by external component)
-#   - Kept entity_category on template components and binary sensors
 #
 # v1.1.0 - 2025-10-09
 #   - Removed sync scripts completely
