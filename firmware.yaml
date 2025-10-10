@@ -6,12 +6,14 @@
 # Interface: UART to Voltronic Protocol
 # 
 # CHANGELOG:
-# v1.2.0 - 2025-10-09
+# v1.2.0 - 2025-10-10
 #   - Added dynamic log level control via select entity
 #   - Added debug component and reset reason sensor
 #   - Added min_version requirement (2025.5.0)
 #   - Added on_boot action to set initial log level
 #   - Added log_level_default substitution
+#   - Removed entity_category from pipsolar sensors (not supported by external component)
+#   - Kept entity_category on template components and binary sensors
 #
 # v1.1.0 - 2025-10-09
 #   - Removed sync scripts completely
@@ -138,11 +140,9 @@ sensor:
     # Grid measurements
     grid_voltage:
       name: Grid voltage
-      entity_category: diagnostic
       icon: mdi:transmission-tower
     grid_frequency:
       name: Grid frequency
-      entity_category: diagnostic
       icon: mdi:sine-wave
 
     # Internal measurements
@@ -152,57 +152,47 @@ sensor:
       icon: mdi:flash
     inverter_heat_sink_temperature:
       name: Heat sink temperature
-      entity_category: diagnostic
       icon: mdi:thermometer
 
     # PV1 MPPT
     pv1_input_voltage:
       name: PV1 voltage
-      entity_category: diagnostic
       icon: mdi:solar-panel
     pv1_input_current:
       name: PV1 current
-      entity_category: diagnostic
       icon: mdi:current-dc
     pv1_charging_power:
       name: PV1 power
-      entity_category: diagnostic
       icon: mdi:solar-power
 
     # PV2 MPPT
     pv2_input_voltage:
       name: PV2 voltage
-      entity_category: diagnostic
       icon: mdi:solar-panel
     pv2_input_current:
       name: PV2 current
-      entity_category: diagnostic
       icon: mdi:current-dc
     pv2_charging_power:
       name: PV2 power
-      entity_category: diagnostic
       icon: mdi:solar-power
           
     # Battery measurements
     battery_voltage:
       name: Battery voltage
-      entity_category: diagnostic
       icon: mdi:battery
     battery_charging_current:
       name: Battery charging current
-      entity_category: diagnostic
       icon: mdi:battery-charging
     battery_discharge_current:
       name: Battery discharge current
-      entity_category: diagnostic
       icon: mdi:battery-minus
 
     # Battery configuration readback (with direct sync)
     battery_under_voltage:
       name: Battery under voltage
       id: battery_under_voltage
-      entity_category: diagnostic
       icon: mdi:battery-alert
+      internal: true
       on_value:
         then:
           - lambda: |-
@@ -216,6 +206,7 @@ sensor:
 
     battery_bulk_voltage:
       name: Battery bulk voltage
+      id: battery_bulk_voltage
       entity_category: diagnostic
       icon: mdi:battery-charging-100
 
@@ -269,7 +260,6 @@ sensor:
 
     battery_type:
       name: Battery type
-      entity_category: diagnostic
       icon: mdi:battery-heart
 
     current_max_ac_charging_current:
@@ -307,19 +297,15 @@ sensor:
     # Output measurements
     ac_output_apparent_power:
       name: Output apparent power
-      entity_category: diagnostic
       icon: mdi:lightning-bolt
     ac_output_active_power:
       name: Output active power
-      entity_category: diagnostic
       icon: mdi:power-plug
     ac_output_voltage:
       name: Output voltage
-      entity_category: diagnostic
       icon: mdi:sine-wave
     output_load_percent:
       name: Output load percent
-      entity_category: diagnostic
       icon: mdi:gauge
     output_mode:
       name: Output mode
